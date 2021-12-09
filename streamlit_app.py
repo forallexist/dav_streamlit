@@ -1,68 +1,35 @@
-import streamlit as st
-import numpy as np
+from collections import namedtuple
+import altair as alt
+import math
 import pandas as pd
-from sklearn import datasets
-from sklearn.ensemble import RandomForestClassifier
+import streamlit as st
 
-#PAGE_CONFIG = {"page_title":"StColab.io","page_icon":":smiley:","layout":"centered"}
-#st.beta_set_page_config(**PAGE_CONFIG)
-
-def user_input_features() :
-  sepal_length = st.sidebar.slider('sepal_length',4.3, 7.9, 5.4)
-  sepal_width = st.sidebar.slider('sepal_width',2.0, 4.4, 3.4)
-  petal_length = st.sidebar.slider('petal_length',1.0, 6.9, 1.3)
-  petal_width = st.sidebar.slider('petal_width',0.1, 2.5, 0.2)
-  data = {'sepal_length' : sepal_length,
-          'sepal_width' : sepal_width,
-          'petal_length' : petal_length,
-          'petal_width' : petal_width
-          }
-  features = pd.DataFrame(data, index=[0])
-  return features
-
-def main():
-	#st.title("Awesome Streamlit for MLDDD")
-	#st.subheader("How to run streamlit from colab")
-  st.write("""
-  # Simple Iris Flower Prediction WebApp
-
-  This app predicts the **Iris flower** type!
-  
-  """)
-
-  st.sidebar.header('User Input Parameters')
-
-  df= user_input_features()
-
-  st.subheader("파라미터를 설정해주세요.")
-  st.write(df)
-
-  iris = datasets.load_iris()
-  x=iris.data
-  y=iris.target
-
-  clf = RandomForestClassifier()
-  clf.fit(x,y)
-
-  predict_ = clf.predict(df)
-  predict_proba = clf.predict_proba(df)
-
-  st.subheader("Iris 종류 ")
-  st.write(iris.target_names)
-
-  st.subheader("예측된 꽃종류")
-  st.write(iris.target_names[predict_])
-
-  st.subheader("예측된 꽃종류2")
-  st.write(predict_)
-
-  st.subheader("예측된 꽃종류3")
-  st.write(iris.target_names)
-
-  st.subheader("꽃종류별 예측 확률")
-  st.write(predict_proba)
+"""
+# Welcome to Streamlit!
+Edit `/streamlit_app.py` to customize this app to your heart's desire :heart:
+If you have any questions, checkout our [documentation](https://docs.streamlit.io) and [community
+forums](https://discuss.streamlit.io).
+In the meantime, below is an example of what you can do with just a few lines of code:
+"""
 
 
+with st.echo(code_location='below'):
+    total_points = st.slider("Number of points in spiral", 1, 5000, 2000)
+    num_turns = st.slider("Number of turns in spiral", 1, 100, 9)
 
-if __name__ == '__main__':
-	main()
+    Point = namedtuple('Point', 'x y')
+    data = []
+
+    points_per_turn = total_points / num_turns
+
+    for curr_point_num in range(total_points):
+        curr_turn, i = divmod(curr_point_num, points_per_turn)
+        angle = (curr_turn + 1) * 2 * math.pi * i / points_per_turn
+        radius = curr_point_num / total_points
+        x = radius * math.cos(angle)
+        y = radius * math.sin(angle)
+        data.append(Point(x, y))
+
+    st.altair_chart(alt.Chart(pd.DataFrame(data), height=500, width=500)
+        .mark_circle(color='#0068c9', opacity=0.5)
+        .encode(x='x:Q', y='y:Q'))
